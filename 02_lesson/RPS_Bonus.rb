@@ -91,14 +91,20 @@ class Human < Player
     self.name = n
   end
 
-  def choose
-    choice = nil
+  def prompt_input
+    choice = ""
     loop do
       print "Please choose Rock, Paper, Scissors, Spock, or Lizard >> "
       choice = gets.chomp.downcase
       break if VALUES.include? choice
       puts "Sorry, that wasn't a valid choice."
     end
+
+    choice
+  end
+
+  def choose
+    choice = prompt_input
 
     self.move = case choice
                 when 'rock'
