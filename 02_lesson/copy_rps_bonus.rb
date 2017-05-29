@@ -1,73 +1,3 @@
-class Rock
-  def >(other_move)
-    other_move.class == Scissors || other_move.class == Lizard
-  end
-
-  def <(other_move)
-    other_move.class == Paper || other_move.class == Spock
-  end
-
-  def to_s
-    'rock'
-  end
-end
-
-class Paper
-  def >(other_move)
-    other_move.class == Rock || other_move.class == Spock
-  end
-
-  def <(other_move)
-    other_move.class == Scissors || other_move.class == Lizard
-  end
-
-  def to_s
-    'paper'
-  end
-end
-
-class Scissors
-  def >(other_move)
-    other_move.class == Paper || other_move.class == Lizard
-  end
-
-  def <(other_move)
-    other_move.class == Rock || other_move.class == Spock
-  end
-
-  def to_s
-    'scissors'
-  end
-end
-
-class Lizard
-  def >(other_move)
-    other_move.class == Spock || other_move.class == Paper
-  end
-
-  def <(other_move)
-    other_move.class == Rock || other_move.class == Scissors
-  end
-
-  def to_s
-    'lizard'
-  end
-end
-
-class Spock
-  def >(other_move)
-    other_move.class == Scissors || other_move.class == Rock
-  end
-
-  def <(other_move)
-    other_move.class == Paper || other_move.class == Lizard
-  end
-
-  def to_s
-    'spock'
-  end
-end
-
 class Player
   VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock']
   attr_accessor :move, :name, :score, :history
@@ -78,21 +8,20 @@ class Player
     @history = []
   end
 
+  def adjust_history(status)
+    history.push(won: move) if status == :won
+    history.push(lost: move) if status == :lost
+    history.push(tie: move) if status == :tie
+  end
+
+  def increment_score
+    self.score += 1
+  end
+
   private
 
   def choose(choice)
-    self.move = case choice
-                when 'rock'
-                  Rock.new
-                when 'scissors'
-                  Scissors.new
-                when 'paper'
-                  Paper.new
-                when 'spock'
-                  Spock.new
-                when 'lizard'
-                  Lizard.new
-                end
+    self.move = choice
   end
 end
 
@@ -102,8 +31,8 @@ class Human < Player
     loop do
       puts "What's your name?"
       n = gets.chomp.strip
-      break unless n.empty?
-      puts "Sorry, must enter a value."
+      break unless n.empty? || n.length < 2
+      puts "Sorry, must enter a name of two or more letters."
     end
     self.name = n
   end
@@ -111,20 +40,19 @@ class Human < Player
   def prompt_input
     choice = ""
     loop do
-      print "Choose (R)ock, (P)aper, (Sc)issors, (Sp)ock, or (L)izard >> "
+      print "Choose (R)ock, (P)aper, (S)cissors, (Sp)ock, or (L)izard >> "
       choice = gets.chomp.downcase
-      break if %w[r p sc sp l].include? choice
+      break if %w[r p s sp l].include? choice
       puts "Sorry, that wasn't a valid choice."
     end
 
-    convert_letter = { "r" => "rock", "p" => "paper", "sc" => "scissors",
+    convert_letter = { "r" => "rock", "p" => "paper", "s" => "scissors",
                        "sp" => "spock", "l" => "lizard" }
     convert_letter[choice]
   end
 
   def choose
     choice = prompt_input
-
     super(choice)
   end
 end
@@ -155,7 +83,7 @@ end
 
 class R2D2 < Computer # Only chooses rock
   def choose
-    self.move = Rock.new
+    super('rock')
   end
 end
 
@@ -259,8 +187,8 @@ class RPSGame
   end
 
   def display_moves
-    puts "#{human.name} chose: #{human.move.class}"
-    puts "#{computer.name} chose: #{computer.move.class}"
+    puts "#{human.name} chose: #{human.move.capitalize}"
+    puts "#{computer.name} chose: #{computer.move.capitalize}"
   end
 
   def display_scores
@@ -268,8 +196,8 @@ class RPSGame
     puts "#{computer.name}'s Score: #{computer.score}"
   end
 
-  def display_results(winner)
-    case winner
+  def display_results(winning_player)
+    case winning_player
     when :human
       print "#{human.name} wins! "
     when :computer
@@ -277,21 +205,21 @@ class RPSGame
     when :tie
       print "It's a tie!"
     end
-    puts sentence_constructor(winner)
+    puts sentence_constructor(winning_player)
     display_scores
   end
 
-  def sentence_constructor(winner)
-    hum_str = move_string(human)
-    comp_str = move_string(computer)
-    first = winner == :human ? hum_str.capitalize : comp_str.capitalize
-    second = if winner == :human
+  def sentence_constructor(winning_player)
+    hum_str = human.move
+    comp_str = computer.move
+    first = winning_player == :human ? hum_str.capitalize : comp_str.capitalize
+    second = if winning_player == :human
                PHRASES[hum_str][comp_str]
              else
                PHRASES[comp_str][hum_str]
              end
-    third = winner == :human ? comp_str : hum_str
-    return " " if winner == :tie
+    third = winning_player == :human ? comp_str : hum_str
+    return " " if winning_player == :tie
 
     third = "Spock" if third == "spock"
     "#{first} #{second} #{third}!"
@@ -302,43 +230,33 @@ class RPSGame
     puts "Computer History: #{computer.history}"
   end
 
-  def increment_score(player)
-    human.score += 1 if player.class.ancestors.include? Human
-    computer.score += 1 if player.class.ancestors.include? Computer
+  def adjust_history(winning_player)
+    case winning_player
+    when :human
+      human.adjust_history(:won)
+      computer.adjust_history(:lost)
+    when :computer
+      human.adjust_history(:lost)
+      computer.adjust_history(:won)
+    when :tie
+      human.adjust_history(:tie)
+      computer.adjust_history(:tie)
+    end
   end
 
-  def move_string(player)
-    player.move.to_s
+  def increment_score(winning_player)
+    human.increment_score if winning_player == :human
+    computer.increment_score if winning_player == :computer
   end
 
-  def adjust_history_human
-    human.history.push(won: move_string(human))
-    computer.history.push(lost: move_string(computer))
-  end
-
-  def adjust_history_computer
-    human.history.push(lost: move_string(human))
-    computer.history.push(won: move_string(computer))
-  end
-
-  def adjust_history_tie
-    human.history.push(tie: move_string(human))
-    computer.history.push(tie: move_string(computer))
-  end
-
-  def winner
+  def determine_winner
     player_choice = human.move
     computer_choice = computer.move
-    if player_choice > computer_choice
-      increment_score(human)
-      adjust_history_human
+    if PHRASES[player_choice].key?(computer_choice)
       :human
-    elsif player_choice < computer_choice
-      increment_score(computer)
-      adjust_history_computer
+    elsif PHRASES[computer_choice].key?(player_choice)
       :computer
     else
-      adjust_history_tie
       :tie
     end
   end
@@ -390,18 +308,17 @@ class RPSGame
     computer.choose
   end
 
-  def display_methods
-    display_moves
-    display_results(winner)
-    # display_histories
-  end
-
   def play
     print_hello
     loop do
       make_choices
       puts
-      display_methods
+      display_moves
+      winner = determine_winner
+      adjust_history(winner)
+      increment_score(winner)
+      display_results(winner)
+      # display_histories
       puts
       game_over if end_of_match?
       break unless play_again?
