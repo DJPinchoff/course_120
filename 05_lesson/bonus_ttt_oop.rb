@@ -1,5 +1,3 @@
-require 'pry'
-
 class Array
   def joinor(delimiter = ', ', word = 'or')
     case size
