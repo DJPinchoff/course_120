@@ -47,7 +47,6 @@ class Board
     nil
   end
 
-  # rubocop:disable Metrics/CyclomaticComplexity
   def find_move_in_marker_line_gap(marker)
     WINNING_LINES.each do |a, b, c|
       return a if matching_markers?(@squares.values_at(b, c), marker) &&
@@ -60,7 +59,6 @@ class Board
 
     nil
   end
-  # rubocop:enable Metrics/CyclomaticComplexity
 
   def reset_squares_to(symbol)
     case symbol
@@ -212,11 +210,7 @@ class TTTGame
     end
 
     human.marker = choice
-    computer.marker = if human.marker == X_MARKER
-                        O_MARKER
-                      else
-                        X_MARKER
-                      end
+    computer.marker = human.marker == X_MARKER ? O_MARKER : X_MARKER
   end
 
   def player_settings
