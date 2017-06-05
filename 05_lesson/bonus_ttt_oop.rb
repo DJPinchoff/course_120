@@ -286,19 +286,13 @@ class TTTGame
     board[square] = human.marker
   end
 
-  def computer_defensive_move
-    return false unless board.find_move_in_marker_line_gap(human.marker)
-    board.find_move_in_marker_line_gap(human.marker)
-  end
-
-  def computer_offensive_move
-    return false unless board.find_move_in_marker_line_gap(computer.marker)
-    board.find_move_in_marker_line_gap(computer.marker)
-  end
-
   def computer_strategic_move
-    return computer_offensive_move if computer_offensive_move
-    return computer_defensive_move if computer_defensive_move
+    move = board.find_move_in_marker_line_gap(computer.marker) # offensive
+    return move if move
+
+    move = board.find_move_in_marker_line_gap(human.marker) # defensive
+    return move if move
+
     nil
   end
 
