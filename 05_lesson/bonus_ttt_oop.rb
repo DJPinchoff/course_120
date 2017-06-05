@@ -47,7 +47,7 @@ class Board
     nil
   end
 
-  def find_move_in_marker_line_gap(marker)
+  def find_gap_in_line_of(marker)
     WINNING_LINES.each do |a, b, c|
       return a if matching_markers?(@squares.values_at(b, c), marker) &&
                   unmarked_keys.include?(a)
@@ -287,10 +287,10 @@ class TTTGame
   end
 
   def computer_strategic_move
-    move = board.find_move_in_marker_line_gap(computer.marker) # offensive
+    move = board.find_gap_in_line_of(computer.marker) # offensive
     return move if move
 
-    move = board.find_move_in_marker_line_gap(human.marker) # defensive
+    move = board.find_gap_in_line_of(human.marker) # defensive
     return move if move
 
     nil
