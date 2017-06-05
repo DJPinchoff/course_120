@@ -9,9 +9,7 @@ class Player
   end
 
   def adjust_history(status)
-    history.push(won: move) if status == :won
-    history.push(lost: move) if status == :lost
-    history.push(tie: move) if status == :tie
+    history.push(status => move)
   end
 
   def increment_score

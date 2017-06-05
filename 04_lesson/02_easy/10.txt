@@ -1,0 +1,16 @@
+Benefits of OOP in Ruby
+
+ONE
+Allows you to accurately model a solution to a problem using objects and interfaces as we think about things in real life.
+
+TWO
+Flexibility in code
+
+THREE
+Security in code in terms of only allowing objects to modify their own states, etc...
+
+FOUR
+Modular design elements would allow for easy cut and pasting and reuse of object ideas in a variety of programs
+
+FIVE
+Easier maintenance of code with easier to understand objects instead of large procedural nuances being messed with by a programmer new to a specific program or project's code

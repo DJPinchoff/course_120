@@ -1,0 +1,8 @@
+excited_dog = "excited dog"
+    This is a local variable that could be created inside of any block or method.
+
+@excited_dog = "excited dog"
+    This is an instance variable that is attached as a current state of an object instance.
+
+@@excited_dog = "excited dog"
+    This is a class variable that is accessed only via its class and available getter and setter methods.
