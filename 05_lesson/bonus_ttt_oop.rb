@@ -47,18 +47,14 @@ class Board
     nil
   end
 
-  def check_for_match_at?(a, b, marker)
-    matching_markers?(@squares.values_at(a, b), marker)
-  end
-
   # rubocop:disable Metrics/CyclomaticComplexity
   def find_move_in_marker_line_gap(marker)
     WINNING_LINES.each do |a, b, c|
-      return a if check_for_match_at?(b, c, marker) &&
+      return a if matching_markers?(@squares.values_at(b, c), marker) &&
                   unmarked_keys.include?(a)
-      return b if check_for_match_at?(a, c, marker) &&
+      return b if matching_markers?(@squares.values_at(a, c), marker) &&
                   unmarked_keys.include?(b)
-      return c if check_for_match_at?(a, b, marker) &&
+      return c if matching_markers?(@squares.values_at(a, b), marker) &&
                   unmarked_keys.include?(c)
     end
 
