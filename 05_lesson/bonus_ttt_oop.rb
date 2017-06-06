@@ -154,6 +154,7 @@ class TTTGame
 
       loop do
         current_player_moves
+        update_current_player
         break if board.someone_won? || board.full?
 
         display_board if human_turn?
@@ -309,16 +310,21 @@ class TTTGame
   def current_player_moves
     if human_turn?
       human_moves
-      @current_player = computer.marker
     else
       computer_moves
-      @current_player = human.marker
     end
   end
 
+  def update_current_player
+    @current_player = if @current_player == human.marker
+                        computer.marker
+                      else
+                        human.marker
+                      end
+  end
+
   def match_won?
-    return true if computer.score == MATCH_POINTS || human.score == MATCH_POINTS
-    false
+    computer.score == MATCH_POINTS || human.score == MATCH_POINTS
   end
 
   def reset_scores
