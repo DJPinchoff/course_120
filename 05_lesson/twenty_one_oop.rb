@@ -1,5 +1,6 @@
 module DisplayMessages
   MATCH_POINTS = 5
+  
   def display_welcome_message
     clear_screen
     puts "Welcome to TWENTY-ONE"

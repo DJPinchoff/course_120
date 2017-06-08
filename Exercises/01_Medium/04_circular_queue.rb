@@ -14,7 +14,7 @@ class CircularQueue
   end
 
   def enqueue(item)
-    move_queue_over if !array[-1].nil?
+    move_queue_over
     array[-1] = item
   end
 
@@ -22,8 +22,6 @@ class CircularQueue
     (0..array.length - 2).each do |idx|
       array[idx] = array[idx + 1]
     end
-
-    array[-1] = nil
   end
 end
 

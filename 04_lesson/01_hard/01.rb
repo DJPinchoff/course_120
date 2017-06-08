@@ -4,8 +4,8 @@ class SecretFile
     @log = SecurityLogger.new
   end
 
-  def data
-    @log.create_log_entry
+  def data(entry)
+    @log.create_log_entry(entry)
     @data
   end
 
@@ -24,15 +24,15 @@ class SecurityLogger
     @entries
   end
 
-  def create_log_entry
+  def create_log_entry(entry)
     @count += 1
-    @entries << @count
+    @entries << entry
   end
 end
 
 file = SecretFile.new("This is the secret!")
 p file.log.entries
-puts file.data
+puts file.data("Hello")
 p file.log.entries
-puts file.data
+puts file.data("Goodbye")
 p file.log.entries
