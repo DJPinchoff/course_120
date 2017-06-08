@@ -1,9 +1,84 @@
+module DisplayMessages
+  MATCH_POINTS = 5
+  def display_welcome_message
+    clear_screen
+    puts "Welcome to TWENTY-ONE"
+    puts "Win #{MATCH_POINTS} rounds to win the match!"
+  end
+
+  def display_initial_computer_cards
+    comp_card = computer.hand[1]
+    puts "#{computer} shows: (#{comp_card.value}) #{comp_card}"
+  end
+
+  def display_initial_human_cards
+    puts "#{human}'s cards: #{human.hand[0]} and #{human.hand[1]}"
+    puts "#{human}'s total: #{human.total}"
+  end
+
+  def display_dealer_cards
+    name = computer.name
+    puts "#{name} reveals: #{computer.hand[0]} and #{computer.hand[1]}"
+    puts "#{name}'s total: #{computer.total}"
+  end
+
+  def display_new_player_card
+    puts "#{human}'s new card: #{human.hand[-1]}"
+    return if busted?(human)
+    puts "#{human}'s new total: #{human.total}"
+  end
+
+  def display_new_dealer_card
+    puts "#{computer}'s new card: #{computer.hand[-1]}"
+    puts "#{computer}'s new total: #{computer.total}"
+  end
+
+  def display_totals
+    puts "#{human}'s total: #{human.total}"
+    puts "#{computer}'s total: #{computer.total}"
+  end
+
+  def display_busted_message
+    if busted?(computer)
+      puts "#{computer} busted. #{human.name.upcase} WON!!"
+    else
+      puts "#{human} busted. #{computer.name.upcase} WON!!"
+    end
+  end
+
+  def display_winner_or_tie
+    if detect_winner
+      puts "#{detect_winner.name.upcase} WON!!"
+    else
+      puts "It's a push. Nobody won!"
+    end
+  end
+
+  def display_wins
+    puts "#{human}'s wins: #{human.wins}"
+    puts "#{computer}'s wins: #{computer.wins}"
+  end
+
+  def display_match_won
+    if match_won?(human)
+      puts "CONGRATULATIONS!! #{human} won the match."
+    elsif match_won?(computer)
+      puts "BETTER LUCK NEXT TIME!! #{computer} won the match."
+    end
+  end
+
+  def display_goodbye_message
+    clear_screen
+    puts "Thank you for playing TWENTY-ONE!"
+  end
+end
+
 class Participant
   attr_reader :hand, :wins
 
   def initialize
-    @hand = []
-    @wins = 0
+    reset_hand
+    reset_wins
   end
 
   def get_card(card)
@@ -102,6 +177,10 @@ class Deck
   def initialize
     @cards_in_play = []
     @cards_in_deck = []
+    push_cards_into_deck
+  end
+
+  def push_cards_into_deck
     (1..52).each do |num|
       @cards_in_deck.push(Card.new(num))
     end
@@ -123,8 +202,8 @@ class Deck
   end
 
   def reset
-    used_cards = cards_in_play.select do |card|
-      !card.nil?
+    used_cards = cards_in_play.reject do |card|
+      card.nil?
     end
 
     used_cards.each do |card|
@@ -166,8 +245,11 @@ class Card
 end
 
 class Game
-  MATCH_POINTS = 5
+  include DisplayMessages
+
+  MATCH_POINTS = DisplayMessages::MATCH_POINTS
   COMPUTER_NAMES = ["R2D2", "Number 5", "Hal", "Sonny"]
+
   attr_accessor :human, :computer, :deck
 
   def initialize
@@ -178,19 +260,19 @@ class Game
 
   def start
     loop do
-      display_welcome
+      display_welcome_message
       display_blank_line
       deal_initial_cards
       display_initial_cards
       player_turn
-      dealer_turn if !busted?(human)
+      dealer_turn unless busted?(human)
       increment_winner
       display_blank_line
       display_results
       play_again? ? reset_settings : break
     end
 
-    display_goodbye
+    display_goodbye_message
   end
 
   private
@@ -203,14 +285,16 @@ class Game
     system('clear') || system('cls')
   end
 
-  def display_welcome
-    clear_screen
-    puts "Welcome to TWENTY-ONE"
-    puts "Win #{MATCH_POINTS} rounds to win the match!"
+  def delay_effect
+    3.times do
+      print "."
+      sleep(0.6)
+    end
+    puts
   end
 
   def deal_initial_cards
-    2.times do |_|
+    2.times do
       human.get_card(deck.deal)
       computer.get_card(deck.deal)
     end
@@ -220,22 +304,6 @@ class Game
     display_initial_computer_cards
     display_blank_line
     display_initial_human_cards
-  end
-
-  def display_initial_computer_cards
-    comp_card = computer.hand[1]
-    puts "#{computer} shows: (#{comp_card.value}) #{comp_card}"
-  end
-
-  def display_initial_human_cards
-    puts "#{human}'s cards: #{human.hand[0]} and #{human.hand[1]}"
-    puts "#{human}'s total: #{human.total}"
-  end
-
-  def display_new_player_card
-    puts "#{human}'s new card: #{human.hand[-1]}"
-    return if busted?(human)
-    puts "#{human}'s new total: #{human.total}"
   end
 
   def player_turn
@@ -259,27 +327,6 @@ class Game
     end
   end
 
-  def delay_effect
-    index = 1
-    while index <= 3
-      print "."
-      sleep(0.6)
-      index += 1
-    end
-    puts
-  end
-
-  def display_new_dealer_card
-    puts "#{computer}'s new card: #{computer.hand[-1]}"
-    puts "#{computer}'s new total: #{computer.total}"
-  end
-
-  def display_dealer_cards
-    name = computer.name
-    puts "#{name} reveals: #{computer.hand[0]} and #{computer.hand[1]}"
-    puts "#{name}'s total: #{computer.total}"
-  end
-
   def busted?(participant)
     participant.busted?
   end
@@ -287,6 +334,14 @@ class Game
   def winner_when_busted
     return computer if busted?(human)
     return human if busted?(computer)
+  end
+
+  def increment_winner
+    if detect_winner == human
+      human.increment_wins
+    elsif detect_winner == computer
+      computer.increment_wins
+    end
   end
 
   def display_results
@@ -297,8 +352,15 @@ class Game
     display_match_won
   end
 
-  def match_won?(participant)
-    participant.wins == MATCH_POINTS
+  def detect_winner
+    return nil if tie?
+    return winner_when_busted if busted?(human) || busted?(computer)
+    return computer if computer.total > human.total
+    human
+  end
+
+  def tie?
+    computer.total == human.total
   end
 
   def display_winning_message
@@ -309,49 +371,8 @@ class Game
     end
   end
 
-  def display_busted_message
-    if busted?(computer)
-      puts "#{computer} busted. #{human.name.upcase} WON!!"
-    else
-      puts "#{human} busted. #{computer.name.upcase} WON!!"
-    end
-  end
-
-  def display_winner_or_tie
-    if detect_winner
-      puts "#{detect_winner.name.upcase} WON!!"
-    else
-      puts "It's a push. Nobody won!"
-    end
-  end
-
-  def display_match_won
-    if match_won?(human)
-      puts "CONGRATULATIONS!! #{human} won the match."
-    elsif match_won?(computer)
-      puts "BETTER LUCK NEXT TIME!! #{computer} won the match."
-    end
-  end
-
-  def display_wins
-    puts "#{human}'s wins: #{human.wins}"
-    puts "#{computer}'s wins: #{computer.wins}"
-  end
-
-  def display_totals
-    puts "#{human}'s total: #{human.total}"
-    puts "#{computer}'s total: #{computer.total}"
-  end
-
-  def tie?
-    computer.total == human.total
-  end
-
-  def detect_winner
-    return nil if tie?
-    return winner_when_busted if busted?(human) || busted?(computer)
-    return computer if computer.total > human.total
-    human
+  def match_won?(participant)
+    participant.wins == MATCH_POINTS
   end
 
   def play_again?
@@ -364,11 +385,6 @@ class Game
     end
 
     choice == "y"
-  end
-
-  def display_goodbye
-    clear_screen
-    puts "Thank you for playing TWENTY-ONE!"
   end
 
   def reset_settings
@@ -385,14 +401,6 @@ class Game
   def reset_wins
     human.reset_wins
     computer.reset_wins
-  end
-
-  def increment_winner
-    if detect_winner == human
-      human.increment_wins
-    elsif detect_winner == computer
-      computer.increment_wins
-    end
   end
 end
 
