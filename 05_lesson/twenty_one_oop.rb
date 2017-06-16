@@ -1,6 +1,6 @@
 module DisplayMessages
   MATCH_POINTS = 5
-  
+
   def display_welcome_message
     clear_screen
     puts "Welcome to TWENTY-ONE"
@@ -94,17 +94,12 @@ class Participant
     sum = 0
     num_of_aces = 0
     hand.each do |card|
-      if card.value == 1
-        num_of_aces += 1
-      else
-        sum += card.value
-      end
+      sum += card.value
+      num_of_aces += 1 if card.value == 1
     end
 
-    return sum if num_of_aces == 0
-    sum += num_of_aces
-    return sum += 10 if sum + 10 <= 21
-    sum
+    return sum if num_of_aces == 0 || sum + 10 > 21
+    sum + 10
   end
 
   def reset_hand
@@ -203,9 +198,7 @@ class Deck
   end
 
   def reset
-    used_cards = cards_in_play.reject do |card|
-      card.nil?
-    end
+    used_cards = cards_in_play.reject { |card| card.nil? }
 
     used_cards.each do |card|
       cards_in_deck[card.deck_index] = card
@@ -241,14 +234,13 @@ class Card
   end
 
   def to_s
-    "#{@rank} of #{@suit}"
+    "#{rank} of #{suit}"
   end
 end
 
 class Game
   include DisplayMessages
 
-  MATCH_POINTS = DisplayMessages::MATCH_POINTS
   COMPUTER_NAMES = ["R2D2", "Number 5", "Hal", "Sonny"]
 
   attr_accessor :human, :computer, :deck

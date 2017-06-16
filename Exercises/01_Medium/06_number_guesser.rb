@@ -14,7 +14,11 @@ class GuessingGame
   end
 
   def display_turns_left
-    puts "You have #{@turns_left} guesses remaining."
+    if @turns_left > 1
+      puts "You have #{@turns_left} guesses remaining."
+    else
+      puts "This is your last guess!"
+    end
   end
 
   def set_random_answer

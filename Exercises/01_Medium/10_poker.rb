@@ -115,14 +115,8 @@ class PokerHand
   end
 
   def four_of_a_kind?
-    matches = 0
-    hand.each_with_index do |card1, index1|
-      hand.each_with_index do |card2, index2|
-        next if index1 == index2
-        matches += 1 if card1 == card2
-        return true if matches == 3
-      end
-      matches = 0
+    hand.each do |card1|
+      return true if hand.count { |card| card == card1 } == 4
     end
 
     false
