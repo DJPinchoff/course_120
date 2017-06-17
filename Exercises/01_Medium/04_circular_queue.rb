@@ -1,5 +1,7 @@
+require 'pry'
+
 class CircularQueue
-  attr_accessor :array
+  attr_reader :array
 
   def initialize(max_length)
     @array = Array.new(max_length)
